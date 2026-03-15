@@ -25,6 +25,7 @@ def main():
             'inventory':[]
             }
         # TODO: Return the dictionary
+        return player
 
 
     def create_treasures():
@@ -44,7 +45,15 @@ def main():
             You can customize treasures or randomize the values using random.randint(3, 12).
         """
         # TODO: Create a dictionary of treasure names and integer values
+        treasure = {
+            "diamond": 10,
+            "gold ring": 6,
+            "amethyst": 5,
+            "dusty map": 1,
+            "shiny garnet": 9
+        }
         # TODO: Return the dictionary
+        return treasure
 
 
     def display_options(room_number):
