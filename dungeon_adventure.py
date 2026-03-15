@@ -16,7 +16,14 @@ def main():
             {'name': 'Ailene', 'health': 10, 'inventory': []}
         """
         # TODO: Ask the user for their name using input()
+        user_name: str = input("Enter your name: ")
+        
         # TODO: Initialize a dictionary with keys: "name", "health", and "inventory"
+        player: dict = {
+            'name':user_name,
+            'health':10,
+            'inventory':[]
+            }
         # TODO: Return the dictionary
 
 
