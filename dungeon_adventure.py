@@ -1,4 +1,4 @@
-import random
+import random, os
 
 def main():
     def setup_player():
@@ -50,7 +50,10 @@ def main():
             "gold ring": 6,
             "amethyst": 5,
             "dusty map": 1,
-            "shiny garnet": 9
+            "shiny garnet": 9,
+            "small healing potion": 3,
+            "medium healing potion": 5,
+            "big healing potion": 10
         }
         # TODO: Return the dictionary
         return treasure
@@ -78,10 +81,10 @@ def main():
             'Check health and inventory',
             'Quit the game'
             ]
-        print(f"You are in room {room_number}.")
+        print(f"\nYou are in room {room_number}.\n")
+        print("What would you like to do?\n")
         for num in range(1,len(options)+1):
             print(f"{num}. {options[num-1]}")
-
 
 
     def search_room(player, treasures):
@@ -101,9 +104,30 @@ def main():
               and print what was found.
             - If trap: subtract 2 from player's health and print a warning.
         """
+        # TODO: Create a trap dictionary and randomly assign different traps with varying damage values.
+        traps = {
+            "Snake bite": 4,
+            "Posined arrow": 3,
+            "Falling rock": 5,
+            "Dizziness": 1,
+            "Fall from a height": 2
+        }
         # TODO: Randomly assign outcome = random.choice(["treasure", "trap"])
+        outcome = random.choice(["treasure", "trap"])
         # TODO: Write an if/else to handle treasure vs trap outcomes
         # TODO: Update player dictionary accordingly
+        if outcome == 'treasure':
+            item = random.choice(list(treasures))
+            if item.count("potion") == 1:
+                player["health"] += treasures.get(item)
+                print(f"\nPlayer found a {item}, health was restored by {treasures.get(item)} points\n")
+            else:
+                player['inventory'].append(item)
+                print(f"\nPlayer found a {item}\n")
+        else:
+            trap = random.choice(list(traps))
+            player['health'] -= traps.get(trap)
+            print(f"\nPlayer recieve {trap}\n")
         # TODO: Print messages describing what happened
 
 
@@ -122,8 +146,13 @@ def main():
             Inventory: You have no items yet.
         """
         # TODO: Print player health
+        print(f"\nHealth: {player["health"]}\n")
         # TODO: If the inventory list is not empty, print items joined by commas
         # TODO: Otherwise print “You have no items yet.”
+        if len(player["inventory"]) > 0:
+            print(f"Inventory: {', '.join(player["inventory"])}\n")
+        else:
+            print("You have no items yet.")
 
 
     def end_game(player, treasures):
@@ -138,8 +167,33 @@ def main():
             Prints player’s final health, inventory contents, and total score value.
         """
         # TODO: Calculate total score by summing the value of collected treasures
+        score = 0
+        print("\nCalculating final score...\n")
+        for item in player["inventory"]:
+            score += treasures.get(item)
         # TODO: Print final health, items, and total value
+        # TODO: Implement a scoring system that combines total treasure value and remaining health.
+        # Formula used (health * 10) + score.
+        score += player["health"] * 10
+        print(f"Health: {player["health"]}\nInventory: {', '.join(player["inventory"]) if len(player["inventory"]) > 0 else "You have no items."}\n\nTotal Score: {score}\n")
+        # TODO: Allow players to play multiple rounds and track high scores across games.
+        
         # TODO: End with a message like "Game Over! Thanks for playing."
+        print("\nGame Over! Thanks for playing.\n")
+
+
+    def save_scores(player, score):
+        """
+        Saves score to file for track records of scores.
+
+        Args:
+            player(dict): Player stats.
+            score(int): Player final score.
+
+        Output:
+            Check if file exist for save the score, otherwise create the file and save score.
+        """
+        print("Saving score...")
 
 
     def run_game_loop(player, treasures):
@@ -160,10 +214,42 @@ def main():
             - Health below 1 ends the game early.
         """
         # TODO: Loop through 5 rooms (1–5)
+        for room in range(1,6):
+            while player["health"] > 0:
+                display_options(room)
         # TODO: Inside each room, prompt player choice using input()
+                opt = input("\nSelect your option: ")
         # TODO: Use if/elif to handle each choice (1–4)
-        # TODO: Break or return appropriately when player quits or dies
+        #         match opt:
+        #             case "1":
+        #                 search_room(player, treasures)
+        # # TODO: Break or return appropriately when player quits or dies
+        #             case "2":
+        #                 break
+        #             case "3":
+        #                 check_status(player)
+        #             case "4":
+        #                 print("Thanks for playing.")
+        #                 exit()
+        #             case _:
+        #                 print("\nMust choose a valid option.")
+                if opt == "1":
+                    search_room(player, treasures)
+                elif opt == "2":
+                    break
+                elif opt == "3":
+                    check_status(player)
+                elif opt =="4":
+                    print("\nThanks for playing.\n")
+                    exit()
+                else:
+                    print("\nMust choose a valid option.")
+
+        if player["health"] < 1:
+            print("Player run out of health, Game Over!\n")
+        else:
         # TODO: Call end_game() after all rooms are explored
+            end_game(player, treasures)
 
 
     # -----------------------------------------------------
