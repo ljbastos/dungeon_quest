@@ -81,6 +81,7 @@ def main():
             'Check health and inventory',
             'Quit the game'
             ]
+        print("\033c", end="")
         print(f"\nYou are in room {room_number}.\n")
         print("What would you like to do?\n")
         for num in range(1,len(options)+1):
@@ -112,6 +113,8 @@ def main():
             "Dizziness": 1,
             "Fall from a height": 2
         }
+        
+        print("\033c", end="")
         # TODO: Randomly assign outcome = random.choice(["treasure", "trap"])
         outcome = random.choice(["treasure", "trap"])
         # TODO: Write an if/else to handle treasure vs trap outcomes
@@ -127,7 +130,7 @@ def main():
         else:
             trap = random.choice(list(traps))
             player['health'] -= traps.get(trap)
-            print(f"\nPlayer recieve {trap}\n")
+            print(f"\nPlayer recieve {trap} damage\n")
         # TODO: Print messages describing what happened
 
 
@@ -145,6 +148,7 @@ def main():
             Health: 10
             Inventory: You have no items yet.
         """
+        print("\033c", end="")
         # TODO: Print player health
         print(f"\nHealth: {player["health"]}\n")
         # TODO: If the inventory list is not empty, print items joined by commas
@@ -166,6 +170,7 @@ def main():
         Output:
             Prints player’s final health, inventory contents, and total score value.
         """
+        print("\033c", end="")
         # TODO: Calculate total score by summing the value of collected treasures
         score = 0
         print("\nCalculating final score...\n")
@@ -181,6 +186,9 @@ def main():
         # TODO: End with a message like "Game Over! Thanks for playing."
         print("\nGame Over! Thanks for playing.\n")
 
+        # TODO: Implement play again feature
+        #os.system('cls' if os.name == 'nt' else 'clear')
+
 
     def save_scores(player, score):
         """
@@ -194,6 +202,16 @@ def main():
             Check if file exist for save the score, otherwise create the file and save score.
         """
         print("Saving score...")
+        filePath = 'scores.txt'
+        if os.path.isfile(filePath):
+            print("Scores:\n")
+            with open(filePath, 'r') as f:
+                print(f)
+        else:
+            print("File doesn't exist")
+            with open("scores.txt", "w") as f:
+                f.write(f"{player["name"]}\t\t{score}\t\t{', '.join(player["inventory"]) if len(player["inventory"]) > 0 else "You have no items."}")
+                f.close()
 
 
     def run_game_loop(player, treasures):
