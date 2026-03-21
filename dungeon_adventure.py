@@ -1,5 +1,7 @@
 import random, os
 
+FILE_PATH = "scores.txt"
+
 def main():
     def setup_player():
         """
@@ -81,7 +83,7 @@ def main():
             'Check health and inventory',
             'Quit the game'
             ]
-        print("\033c", end="")
+        ##print("\033c", end="")
         print(f"\nYou are in room {room_number}.\n")
         print("What would you like to do?\n")
         for num in range(1,len(options)+1):
@@ -154,9 +156,37 @@ def main():
         # TODO: If the inventory list is not empty, print items joined by commas
         # TODO: Otherwise print “You have no items yet.”
         if len(player["inventory"]) > 0:
-            print(f"Inventory: {', '.join(player["inventory"])}\n")
+            inventory = shrink_inventory(player["inventory"])
+            [print(f"Inventory: {k} x{inventory.get(k)}", end=', ') for k in inventory.keys()]
         else:
             print("You have no items yet.")
+
+    def shrink_inventory(inv: list) -> dict:
+        """
+        Shrinks the inventory to unique object collected and display the amounts
+
+        Args:
+            inv (list): List containing the actual inventory of the player.
+
+        Return:
+            dict: Example:
+                {
+                "['amethyst']": 5, 
+                "['gold ring']": 2, 
+                "['shiny garnet']": 3, 
+                "['diamond']": 1, 
+                "['dusty map']": 1
+                }
+        """
+        unique = []
+        counter = []
+        # List comprehension for unique items
+        [unique.append(a) for a in inv if a not in unique]
+        # List comprehension for count the unique items
+        [counter.append(inv.count(c)) for c in unique]
+        # Dict containing the unique items and their respective amount
+        inventory = {str(unique[i]): counter[i] for i in range(len(unique))}
+        return inventory
 
 
     def end_game(player, treasures):
@@ -180,17 +210,28 @@ def main():
         # TODO: Implement a scoring system that combines total treasure value and remaining health.
         # Formula used (health * 10) + score.
         score += player["health"] * 10
-        print(f"Health: {player["health"]}\nInventory: {', '.join(player["inventory"]) if len(player["inventory"]) > 0 else "You have no items."}\n\nTotal Score: {score}\n")
+        print(f"\t\tHealth: {player["health"]}\n\t\tInventory: {', '.join(player["inventory"]) if len(player["inventory"]) > 0 else "\t\tYou have no items."}\n\n\t\tTotal Score: {score}\n")
         # TODO: Allow players to play multiple rounds and track high scores across games.
-        
+        save_scores(player, score)
         # TODO: End with a message like "Game Over! Thanks for playing."
         print("\nGame Over! Thanks for playing.\n")
-
+        print("High Scores of Dungeon Adventure:\n")
+        show_scores()
         # TODO: Implement play again feature
-        #os.system('cls' if os.name == 'nt' else 'clear')
+        retry = False
+        while retry == False:
+            choice = input("\nDo you wish to try another run? y/n.\n")
+            if choice == "n":
+                exit()
+            elif choice == "y":
+                print("\033c", end="")
+                main()
+            else:
+                print("\033c", end="")
+                print("\nInvalid input\n")
 
 
-    def save_scores(player, score):
+    def save_scores(player: dict, score: int):
         """
         Saves score to file for track records of scores.
 
@@ -199,19 +240,74 @@ def main():
             score(int): Player final score.
 
         Output:
-            Check if file exist for save the score, otherwise create the file and save score.
+            Save obtain score to file.
         """
         print("Saving score...")
-        filePath = 'scores.txt'
-        if os.path.isfile(filePath):
-            print("Scores:\n")
-            with open(filePath, 'r') as f:
-                print(f)
+        data = f"{player["name"]}+{score}+{', '.join(player["inventory"]) if len(player["inventory"]) > 0 else "You have no items."}\n"
+        write_file(data)
+
+        
+    def write_file(data: str):
+        """
+        Method for file creation and modification.
+
+        Args:
+            data (str): Player data to append
+        """
+        with open(FILE_PATH, "a") as fp:
+            fp.write(data)
+            fp.close()
+
+
+    def read_scores()-> list:
+        """
+        Method for read the file and obtain all lines of the players scores.
+
+        Returns:
+            list: Example:
+                [
+                    ['Someone','34','dusty map'],
+                    ['Another','56','diamond, ruby, amethyst']
+                ]
+
+        """
+        lines = []
+        if os.path.isfile(FILE_PATH):
+            with open(FILE_PATH, "r") as fp:
+                content = fp.readlines()
+                for line in content:
+                    lines.append(line.strip())
+                fp.close()
+        return lines
+
+
+    def show_scores():
+        """
+        Prints scores recorded in the game.
+
+        Output:
+            Shows top 4 scores in descending order.
+            Example:
+                100 - Someone
+                59 - Another
+                1 - Maybe
+        """
+        # Call the method to read the file containing the scores
+        lines = read_scores()
+        cured_lines = []
+        # Parsing data using separator '+' to divide player name, score, inventoryy
+        for p in lines:
+            cured_lines.append(p.split("+")[:2])
+        # Sorting using lambda function to organize the list from low to high
+        ord = sorted(cured_lines, key=lambda a:int(a[1]))
+        # Reversing the list to get the top scores first
+        tst = [score for score in ord[::-1]]
+        # Printing top four scores in the list
+        if len(tst) < 5:
+            [print(' - '.join(top)) for top in tst]
         else:
-            print("File doesn't exist")
-            with open("scores.txt", "w") as f:
-                f.write(f"{player["name"]}\t\t{score}\t\t{', '.join(player["inventory"]) if len(player["inventory"]) > 0 else "You have no items."}")
-                f.close()
+            for top in range(5):
+                print(' - '.join(tst[top][::-1]))
 
 
     def run_game_loop(player, treasures):
@@ -254,6 +350,7 @@ def main():
                 if opt == "1":
                     search_room(player, treasures)
                 elif opt == "2":
+                    print("\033c", end="")
                     break
                 elif opt == "3":
                     check_status(player)
@@ -261,6 +358,7 @@ def main():
                     print("\nThanks for playing.\n")
                     exit()
                 else:
+                    print("\033c", end="")
                     print("\nMust choose a valid option.")
 
         if player["health"] < 1:
